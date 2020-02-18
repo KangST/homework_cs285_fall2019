@@ -2,3 +2,7 @@
 cs285.egg-info/
 __pycache__/
 data/
+.gitignore
+venv/
+mujoco-py/
+.vscode/
