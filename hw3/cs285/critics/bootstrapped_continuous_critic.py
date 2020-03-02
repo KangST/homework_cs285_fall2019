@@ -52,10 +52,10 @@ class BootstrappedContinuousCritic(BaseCritic):
         # TODO: set up the critic loss
         # HINT1: the critic_prediction should regress onto the targets placeholder (sy_target_n)
         # HINT2: use tf.losses.mean_squared_error
-        self.critic_loss = TODO
+        self.critic_loss = tf.losses.mean_squared_error(self.sy_target_n, self.critic_prediction)
 
         # TODO: use the AdamOptimizer to optimize the loss defined above
-        self.critic_update_op = TODO
+        self.critic_update_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.critic_loss)
 
     def define_placeholders(self):
         """
@@ -77,9 +77,9 @@ class BootstrappedContinuousCritic(BaseCritic):
         return sy_ob_no, sy_ac_na, sy_adv_n
 
     def forward(self, ob):
-        # TODO: run your critic
+        # run your critic
         # HINT: there's a neural network structure defined above with mlp layers, which serves as your 'critic'
-        return TODO
+        return self.sess.run(self.critic_prediction, feed_dict={self.sy_ob_no: ob})
 
     def update(self, ob_no, next_ob_no, re_n, terminal_n):
         """
@@ -100,7 +100,7 @@ class BootstrappedContinuousCritic(BaseCritic):
                 loss
         """
 
-        # TODO: Implement the pseudocode below: 
+        # Implement the pseudocode below: 
 
         # do the following (self.num_grad_steps_per_target_update * self.num_target_updates) times:
             # every self.num_grad_steps_per_target_update steps (which includes the first step),
@@ -117,6 +117,9 @@ class BootstrappedContinuousCritic(BaseCritic):
                     #a) sy_ob_no with ob_no
                     #b) sy_target_n with target values calculated above
         
-        TODO
+        for _ in range(self.num_target_updates):
+            target_n = re_n + self.gamma * (1 - terminal_n) * self.forward(next_ob_no)
+            for __ in range(self.num_grad_steps_per_target_update):
+                loss, _ = self.sess.run([self.critic_loss, self.critic_update_op], feed_dict={self.sy_ob_no: ob_no, self.sy_target_n: target_n})
 
         return loss
